@@ -81,7 +81,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateBookingRequest'
+              $ref: '#/components/schemas/BookingRequest'
       responses:
         '201':
           description: Booking created successfully
@@ -138,7 +138,7 @@ components:
         availableSeats:
           type: integer
 
-    CreateBookingRequest:
+    BookingRequest:
       type: object
       required: [flightNumber, departureDate, passenger, paymentInfo]
       properties:
@@ -169,24 +169,29 @@ components:
             passportNumber:
               type: string
         paymentInfo:
-          type: object
-          required: [cardType, cardNumber, expiryMonth, expiryYear, cvv]
-          properties:
-            cardType:
-              type: string
-              enum: [VISA, MASTERCARD, AMEX]
-            cardNumber:
-              type: string
-            expiryMonth:
-              type: string
-              pattern: '^(0[1-9]|1[0-2])$'
-            expiryYear:
-              type: string
-              pattern: '^\d{4}$'
-            cvv:
-              type: string
-              pattern: '^\d{3,4}$'
+          $ref: '#/components/schemas/PaymentInfo'
 
+    PaymentInfo:
+      type: object
+      required:
+        - method
+        - transactionId
+        - amount
+        - currency
+        - status
+      properties:
+        method:
+          type: string
+          enum: [ CREDIT_CARD, DEBIT_CARD, PAYPAL ]
+        transactionId:
+          type: string
+          description: Unique transaction reference from the payment provider
+        price:
+          $ref: '#/components/schemas/PriceDTO'
+        status:
+          type: string
+          enum: [ SUCCESS, FAILURE, PENDING ]
+          description: Status of the payment at the time of booking
     BookingResponse:
       type: object
       properties:
@@ -210,17 +215,24 @@ components:
         seat:
           type: string
         price:
-          type: object
-          properties:
-            amount:
-              type: number
-              format: double
-            currency:
-              type: string
+          $ref: '#/components/schemas/PriceDTO'
         createdAt:
           type: string
           format: date-time
 
+    PriceDTO:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 199.99
+        currency:
+          type: string
+          example: NZD
+      required:
+        - amount
+        - currency
     ErrorResponse:
       type: object
       properties:
