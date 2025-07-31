@@ -1,4 +1,4 @@
-package com.acme.air.flight_booking_service;
+package com.acme.air;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

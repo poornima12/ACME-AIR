@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  title: Flight Booking API
+  version: 1.0.0
+  description: API for flight booking system
+
+paths:
+  /api/v1/flights/search:
+    get:
+      summary: Search for available flights
+      parameters:
+        - name: origin
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Departure airport IATA code
+        - name: destination
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Arrival airport IATA code
+        - name: departureDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Departure date in YYYY-MM-DD format
+        - name: returnDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Return date for round-trip in YYYY-MM-DD format
+        - name: passengers
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Number of passengers
+        - name: cabinClass
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
+          description: Cabin class
+        - name: nonStopOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Set to true to get only direct flights
+      responses:
+        '200':
+          description: List of available flights
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  flights:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Flight'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bookings:
+    post:
+      summary: Create a new flight booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          description: Invalid input or payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Flight unavailable or overbooked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Flight:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+        airline:
+          type: string
+        origin:
+          type: string
+        destination:
+          type: string
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+        duration:
+          type: string
+        stops:
+          type: integer
+        price:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: double
+            currency:
+              type: string
+        cabinClass:
+          type: string
+        availableSeats:
+          type: integer
+
+    CreateBookingRequest:
+      type: object
+      required: [flightNumber, departureDate, passenger, paymentInfo]
+      properties:
+        flightNumber:
+          type: string
+        departureDate:
+          type: string
+          format: date
+        seatPreference:
+          type: string
+          enum: [WINDOW, AISLE, MIDDLE]
+        passenger:
+          type: object
+          required: [firstName, lastName, email, phone, dateOfBirth, passportNumber]
+          properties:
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+            dateOfBirth:
+              type: string
+              format: date
+            passportNumber:
+              type: string
+        paymentInfo:
+          type: object
+          required: [cardType, cardNumber, expiryMonth, expiryYear, cvv]
+          properties:
+            cardType:
+              type: string
+              enum: [VISA, MASTERCARD, AMEX]
+            cardNumber:
+              type: string
+            expiryMonth:
+              type: string
+              pattern: '^(0[1-9]|1[0-2])$'
+            expiryYear:
+              type: string
+              pattern: '^\d{4}$'
+            cvv:
+              type: string
+              pattern: '^\d{3,4}$'
+
+    BookingResponse:
+      type: object
+      properties:
+        bookingId:
+          type: string
+        status:
+          type: string
+          enum: [CONFIRMED, PENDING]
+        flightNumber:
+          type: string
+        departureDate:
+          type: string
+          format: date
+        passenger:
+          type: object
+          properties:
+            firstName:
+              type: string
+            lastName:
+              type: string
+        seat:
+          type: string
+        price:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: double
+            currency:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string

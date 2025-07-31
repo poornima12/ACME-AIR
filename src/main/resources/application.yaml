@@ -1,0 +1,6 @@
+spring doc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    url: /openapi/acme-air.yaml
+    path: /swagger-ui.html
