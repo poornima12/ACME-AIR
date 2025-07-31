@@ -1,10 +1,9 @@
 package com.acme.air.dto;
 
-public record ErrorResponse(
-        ErrorInfo error
-) {
-    public record ErrorInfo(
-            String code,
-            String message
-    ) {}
+public record ErrorResponse(String status, ErrorDetail error) {
+    public ErrorResponse(String code, String message) {
+        this("ERROR", new ErrorDetail(code, message));
+    }
+
+    public record ErrorDetail(String code, String message) {}
 }

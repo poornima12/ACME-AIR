@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Flight Booking API
   version: 1.0.0
-  description: API for flight booking system
+  description: Contract-first API for searching and booking flights.
 
 paths:
   /api/v1/flights/search:
@@ -60,18 +60,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  flights:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Flight'
+                $ref: '#/components/schemas/FlightsResponseWrapper'
         '400':
-          description: Invalid parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
   /api/v1/bookings:
     post:
@@ -88,22 +83,62 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingResponse'
+                $ref: '#/components/schemas/BookingResponseWrapper'
         '400':
-          description: Invalid input or payment details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/BadRequest'
         '409':
-          description: Flight unavailable or overbooked
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Conflict'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
 components:
   schemas:
+    ApiResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [SUCCESS]
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ERROR]
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    FlightsResponseWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                flights:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Flight'
+
+    BookingResponseWrapper:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/BookingResponse'
+
     Flight:
       type: object
       properties:
@@ -176,13 +211,12 @@ components:
       required:
         - method
         - transactionId
-        - amount
-        - currency
+        - price
         - status
       properties:
         method:
           type: string
-          enum: [ CREDIT_CARD, DEBIT_CARD, PAYPAL ]
+          enum: [CREDIT_CARD, DEBIT_CARD, PAYPAL]
         transactionId:
           type: string
           description: Unique transaction reference from the payment provider
@@ -190,8 +224,9 @@ components:
           $ref: '#/components/schemas/PriceDTO'
         status:
           type: string
-          enum: [ SUCCESS, FAILURE, PENDING ]
+          enum: [SUCCESS, FAILURE, PENDING]
           description: Status of the payment at the time of booking
+
     BookingResponse:
       type: object
       properties:
@@ -233,13 +268,57 @@ components:
       required:
         - amount
         - currency
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
+
+  responses:
+    BadRequest:
+      description: Invalid input or query parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            badRequest:
+              summary: Missing required field
+              value:
+                error:
+                  code: INVALID_REQUEST
+                  message: "Origin and destination are required."
+    NotFound:
+      description: Resource not found (e.g. flight, booking)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              summary: Flight not found
+              value:
+                error:
+                  code: RESOURCE_NOT_FOUND
+                  message: "No flight found matching the search criteria."
+    Conflict:
+      description: Flight unavailable or overbooked
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            conflict:
+              summary: Booking conflict
+              value:
+                error:
+                  code: BOOKING_CONFLICT
+                  message: "The flight's requested seat is no longer available."
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            internalError:
+              summary: Server error
+              value:
+                error:
+                  code: INTERNAL_SERVER_ERROR
+                  message: "An unexpected error occurred. Please try again later."
