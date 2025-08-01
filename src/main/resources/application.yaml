@@ -4,3 +4,7 @@ spring doc:
   swagger-ui:
     url: /openapi/acme-air.yaml
     path: /swagger-ui.html
+logging:
+  level:
+    root: INFO
+    com.acme.air: DEBUG

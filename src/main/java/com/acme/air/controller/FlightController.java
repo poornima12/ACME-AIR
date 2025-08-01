@@ -2,6 +2,8 @@ package com.acme.air.controller;
 
 import com.acme.air.dto.ApiResponse;
 import com.acme.air.dto.FlightSearchResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 @RequestMapping("/api/v1/flights")
 public class FlightController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FlightController.class);
+
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<FlightSearchResponse>> searchFlights(
             @RequestParam String origin,
@@ -27,6 +31,7 @@ public class FlightController {
             @RequestParam(required = false) Boolean nonStopOnly
     ) {
         // TODO: Implement search logic
+        logger.info("Search request received: {}", origin);
         FlightSearchResponse response = new FlightSearchResponse(new ArrayList<>());
         return ResponseEntity.ok(new ApiResponse<>("SUCCESS", response));
     }
