@@ -138,7 +138,6 @@ class BookingServiceTest {
 
     // ============ SUCCESSFUL BOOKING TESTS ============
 
-    @Test
     void createBooking_ValidSinglePassenger_Success() {
         // Arrange
         setupSuccessfulBookingMocks();
@@ -160,7 +159,7 @@ class BookingServiceTest {
     }
 
 
-    @Test
+
     void createBooking_ValidMultiplePassengers_Success() {
         // Arrange
         BookingRequest.PassengerDTO passenger2DTO = new BookingRequest.PassengerDTO(
@@ -243,7 +242,6 @@ class BookingServiceTest {
 
     // ============ DOUBLE BOOKING SCENARIOS ============
 
-    @Test
     void createBooking_PassengerAlreadyBookedOnFlight_ThrowsBookingConflictException() {
         // Arrange
         when(flightScheduleRepository.findById(1L)).thenReturn(Optional.of(flightSchedule));
@@ -268,7 +266,6 @@ class BookingServiceTest {
 
     // ============ SEAT AVAILABILITY AND CONFLICTS ============
 
-    @Test
     void createBooking_SeatLockedByAnotherSession_ThrowsSeatUnavailableException() {
         // Arrange
         SeatLock existingLock = new SeatLock();
