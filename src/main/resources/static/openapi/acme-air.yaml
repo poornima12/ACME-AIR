@@ -111,12 +111,7 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                flights:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Flight'
+              $ref: '#/components/schemas/FlightSearchResponse'
 
     BookingResponseWrapper:
       allOf:
@@ -126,9 +121,20 @@ components:
             data:
               $ref: '#/components/schemas/BookingResponse'
 
-    Flight:
+    FlightSearchResponse:
       type: object
       properties:
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlightDTO'
+
+    FlightDTO:
+      type: object
+      properties:
+        flightScheduleId:
+          type: integer
+          format: int64
         flightNumber:
           type: string
         airline:
@@ -143,76 +149,106 @@ components:
         arrivalTime:
           type: string
           format: date-time
-        duration:
-          type: string
-        stops:
+        pricePerSeat:
+          type: number
+          multipleOf: 0.01
+        numberOfPassengers:
           type: integer
-        price:
-          type: object
-          properties:
-            amount:
-              type: number
-              format: double
-            currency:
-              type: string
-        cabinClass:
-          type: string
+        totalPrice:
+          type: number
+          multipleOf: 0.01
         availableSeats:
           type: integer
+        availableSeatNumbers:
+          type: array
+          items:
+            type: string
+          description: List of available seat numbers for this flight
 
     BookingRequest:
       type: object
-      required: [flightNumber, departureDate, passenger, paymentInfo]
+      required: [flightScheduleId, passengers, payment]
       properties:
-        flightNumber:
-          type: string
-        departureDate:
-          type: string
-          format: date
-        seatPreference:
-          type: string
-          enum: [WINDOW, AISLE, MIDDLE]
-        passenger:
-          type: object
-          required: [firstName, lastName, email, phone, dateOfBirth, passportNumber]
-          properties:
-            firstName:
-              type: string
-            lastName:
-              type: string
-            email:
-              type: string
-              format: email
-            phone:
-              type: string
-            dateOfBirth:
-              type: string
-              format: date
-            passportNumber:
-              type: string
-        paymentInfo:
-          $ref: '#/components/schemas/PaymentInfo'
+        flightScheduleId:
+          type: integer
+          format: int64
+          description: Flight schedule ID is required
+        passengers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PassengerDTO'
+          minItems: 1
+          description: Passenger details are required
+        payment:
+          $ref: '#/components/schemas/PaymentInfoDTO'
+          description: Payment information is required
 
-    PaymentInfo:
+    PassengerDTO:
       type: object
-      required:
-        - method
-        - transactionId
-        - price
-        - status
+      required: [firstName, lastName, email, passportNumber, selectedSeatNumber]
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          description: First name is required
+        lastName:
+          type: string
+          minLength: 1
+          description: Last name is required
+        email:
+          type: string
+          format: email
+          description: Email must be valid
+        passportNumber:
+          type: string
+          minLength: 1
+          description: Passport number is required
+        selectedSeatNumber:
+          type: string
+          description: Selected seat number
+
+    PaymentInfoDTO:
+      type: object
+      required: [method, transactionId, price, status]
       properties:
         method:
-          type: string
-          enum: [CREDIT_CARD, DEBIT_CARD, PAYPAL]
+          $ref: '#/components/schemas/PaymentMethod'
+          description: Payment method is required
         transactionId:
           type: string
-          description: Unique transaction reference from the payment provider
+          minLength: 1
+          description: Transaction ID is required
         price:
           $ref: '#/components/schemas/PriceDTO'
+          description: Price information is required
         status:
+          $ref: '#/components/schemas/PaymentStatus'
+          description: Payment status is required
+
+    PaymentMethod:
+      type: string
+      enum: [CREDIT_CARD, DEBIT_CARD, PAYPAL]
+
+    PaymentStatus:
+      type: string
+      enum: [SUCCESS, FAILURE, PENDING]
+      description: Status of the payment at the time of booking
+
+    PriceDTO:
+      type: object
+      required: [amountPaid, currency]
+      properties:
+        amountPaid:
+          type: number
+          multipleOf: 0.01
+          minimum: 0.01
+          description: Amount must be positive with max 2 decimal places
+          example: 199.99
+        currency:
           type: string
-          enum: [SUCCESS, FAILURE, PENDING]
-          description: Status of the payment at the time of booking
+          pattern: '^[A-Z]{3}$'
+          description: Currency must be a 3-letter ISO code (e.g. NZD)
+          example: NZD
 
     BookingResponse:
       type: object
@@ -221,40 +257,43 @@ components:
           type: string
         status:
           type: string
-          enum: [CONFIRMED, PENDING]
         flightNumber:
           type: string
         departureDate:
           type: string
           format: date
-        passenger:
-          type: object
-          properties:
-            firstName:
-              type: string
-            lastName:
-              type: string
-        seat:
-          type: string
-        price:
-          $ref: '#/components/schemas/PriceDTO'
+        passengers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PassengerSeatDTO'
+        payment:
+          $ref: '#/components/schemas/BookingPaymentInfoDTO'
         createdAt:
           type: string
-          format: date-time
+          format: date
 
-    PriceDTO:
+    PassengerSeatDTO:
       type: object
       properties:
-        amount:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        seatNumber:
+          type: string
+
+    BookingPaymentInfoDTO:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        amountPaid:
           type: number
-          format: double
-          example: 199.99
+          multipleOf: 0.01
         currency:
           type: string
-          example: NZD
-      required:
-        - amount
-        - currency
 
   responses:
     BadRequest:
@@ -267,6 +306,7 @@ components:
             badRequest:
               summary: Missing required field
               value:
+                status: ERROR
                 error:
                   code: INVALID_REQUEST
                   message: "Origin and destination are required."
@@ -280,6 +320,7 @@ components:
             notFound:
               summary: Flight not found
               value:
+                status: ERROR
                 error:
                   code: RESOURCE_NOT_FOUND
                   message: "No flight found matching the search criteria."
@@ -293,6 +334,7 @@ components:
             conflict:
               summary: Booking conflict
               value:
+                status: ERROR
                 error:
                   code: BOOKING_CONFLICT
                   message: "The flight's requested seat is no longer available."
@@ -306,6 +348,7 @@ components:
             internalError:
               summary: Server error
               value:
+                status: ERROR
                 error:
                   code: INTERNAL_SERVER_ERROR
                   message: "An unexpected error occurred. Please try again later."

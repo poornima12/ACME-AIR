@@ -2,8 +2,8 @@ package com.acme.air.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 @Entity
 public class FlightSchedule extends BaseEntity {
@@ -15,8 +15,10 @@ public class FlightSchedule extends BaseEntity {
     @ManyToOne
     private Flight flight;
 
-    private LocalDate departureDate;
-    private LocalTime departureTime;
+    private ZonedDateTime departureTime;
+    private ZonedDateTime arrivalTime;
+    private BigDecimal price;
+    private String currency = "NZD";
 
     private Integer totalSeats;
 }

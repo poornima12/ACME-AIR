@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +19,6 @@ public class Passenger extends BaseEntity {
     private String lastName;
     private String phone;
     private String email;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     private String passportNumber;
 }

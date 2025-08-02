@@ -17,7 +17,7 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
 
-    private BigDecimal amount;
+    private BigDecimal totalAmountPaid;
     private String currency;
     private String transactionId;
     private PaymentStatus status;

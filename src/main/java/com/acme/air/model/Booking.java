@@ -3,6 +3,7 @@ package com.acme.air.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 public class Booking extends BaseEntity {
@@ -20,11 +21,14 @@ public class Booking extends BaseEntity {
     @OneToOne
     private Seat seat;
 
-    private LocalDateTime bookingTime;
+    private ZonedDateTime bookingTime;
     private BookingStatus status;
 
     public enum BookingStatus {
-        CONFIRMED, CANCELLED
+        CONFIRMED,
+        CANCELLED,
+        EXPIRED,
+        REFUNDED
     }
 }
 
