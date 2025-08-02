@@ -41,19 +41,6 @@ paths:
           schema:
             type: integer
           description: Number of passengers
-        - name: cabinClass
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
-          description: Cabin class
-        - name: nonStopOnly
-          in: query
-          required: false
-          schema:
-            type: boolean
-          description: Set to true to get only direct flights
       responses:
         '200':
           description: List of available flights

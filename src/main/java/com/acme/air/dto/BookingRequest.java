@@ -16,7 +16,7 @@ public record BookingRequest(
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate departureDate,
-        @Pattern(regexp = "WINDOW|AISLE|MIDDLE", message = "Seat preference must be WINDOW, AISLE, or MIDDLE")
+        @Pattern(regexp = "WINDOW|AISLE|MIDDLE", message = "SeatRepository preference must be WINDOW, AISLE, or MIDDLE")
         String seatPreference,
         @NotNull(message = "Passenger details are required")
         @Valid

@@ -26,9 +26,7 @@ public class FlightController {
             @RequestParam String destination,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate, //YYYY-MM-DD
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
-            @RequestParam int passengers,
-            @RequestParam(required = false) String cabinClass,
-            @RequestParam(required = false) Boolean nonStopOnly
+            @RequestParam int passengers
     ) {
         // TODO: Implement search logic
         logger.info("Search request received: {}", origin);
