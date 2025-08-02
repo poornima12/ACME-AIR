@@ -2,8 +2,10 @@ package com.acme.air.controller;
 
 import com.acme.air.dto.ApiResponse;
 import com.acme.air.dto.FlightSearchResponse;
+import com.acme.air.service.FlightService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,9 @@ public class FlightController {
 
     private static final Logger logger = LoggerFactory.getLogger(FlightController.class);
 
+    @Autowired
+    private FlightService flightService;
+
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<FlightSearchResponse>> searchFlights(
             @RequestParam String origin,
@@ -28,9 +33,13 @@ public class FlightController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
             @RequestParam int passengers
     ) {
-        // TODO: Implement search logic
-        logger.info("Search request received: {}", origin);
-        FlightSearchResponse response = new FlightSearchResponse(new ArrayList<>());
-        return ResponseEntity.ok(new ApiResponse<>("SUCCESS", response));
+        logger.info("Flight search request: {} -> {}, departure: {}, passengers: {}",
+                origin, destination, departureDate, passengers);
+
+        FlightSearchResponse response = flightService.searchFlights(
+                origin, destination, departureDate, returnDate, passengers);
+
+        logger.info("Returning {} flights for search request", response.flights().size());
+        return ResponseEntity.ok(new ApiResponse<>(response));
     }
 }

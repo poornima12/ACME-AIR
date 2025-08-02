@@ -1,11 +1,19 @@
 package com.acme.air.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class FlightSchedule extends BaseEntity {
 
     @Id

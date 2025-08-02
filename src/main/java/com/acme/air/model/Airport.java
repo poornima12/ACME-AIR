@@ -1,11 +1,16 @@
 package com.acme.air.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Airport extends BaseEntity {
 
     @Id
@@ -16,5 +21,8 @@ public class Airport extends BaseEntity {
     private String name;
     private String city;
     private String country;
+    @Column(name = "timezone_id")
+    private String timezoneId;  // "Pacific/Auckland", "Australia/Sydney"
+
 }
 
