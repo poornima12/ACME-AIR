@@ -12,8 +12,4 @@ public interface AirportRepository extends JpaRepository<Airport, Long> {
 
     Optional<Airport> findByCodeIgnoreCase(String code);
 
-    List<Airport> findByCity(String city);
-
-    boolean existsByCodeIgnoreCase(String code);
-
 }
