@@ -19,14 +19,14 @@ public class Booking extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Passenger passenger;
+    @Column(unique = true, nullable = false)
+    private String bookingReference;
 
     @ManyToOne
     private FlightSchedule schedule;
 
-    @OneToOne
-    private Seat seat;
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
 
     private ZonedDateTime bookingTime;
     private BookingStatus status;
