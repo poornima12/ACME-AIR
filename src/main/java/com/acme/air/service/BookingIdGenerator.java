@@ -14,16 +14,13 @@ public class BookingIdGenerator {
     public String generateBookingReference() {
         StringBuilder sb = new StringBuilder();
         sb.append(BOOKING_PREFIX);
-
         // Add timestamp component (last 4 digits of current time)
         long timestamp = System.currentTimeMillis();
         sb.append(String.format("%04d", timestamp % 10000));
-
         // Add random component
         for (int i = 0; i < 4; i++) {
             sb.append(CHARS.charAt(random.nextInt(CHARS.length())));
         }
-
         return sb.toString(); // e.g., AIR1234ABCD
     }
 }

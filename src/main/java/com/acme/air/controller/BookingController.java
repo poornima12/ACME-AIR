@@ -24,8 +24,9 @@ import static org.springframework.web.util.WebUtils.getSessionId;
 @RestController
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
-@Slf4j
 public class BookingController {
+
+    private static final Logger log = LoggerFactory.getLogger(BookingController.class);
 
     private final BookingService bookingService;
 
