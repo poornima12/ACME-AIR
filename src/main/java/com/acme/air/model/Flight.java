@@ -25,5 +25,5 @@ public class Flight extends BaseEntity {
     @ManyToOne
     private Airport destination;
 
-    private String airline; // Optional, e.g., Air New Zealand
+    private String airline;
 }

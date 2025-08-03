@@ -7,12 +7,12 @@ INSERT INTO airport (id, code, name, city, country, timezone_id, created_at, upd
 
 -- FLIGHTS (Same as existing)
 INSERT INTO flight (id, flight_code, airline, origin_id, destination_id, created_at, updated_at) VALUES
-(1, 'NZ101', 'Air New Zealand', 1, 4, NOW(), NOW()),  -- AKL -> SYD
-(2, 'NZ102', 'Air New Zealand', 4, 1, NOW(), NOW()),  -- SYD -> AKL
-(3, 'NZ405', 'Air New Zealand', 1, 2, NOW(), NOW()),  -- AKL -> WLG
-(4, 'NZ406', 'Air New Zealand', 2, 1, NOW(), NOW()),  -- WLG -> AKL
-(5, 'NZ549', 'Air New Zealand', 1, 3, NOW(), NOW()),  -- AKL -> CHC
-(6, 'NZ550', 'Air New Zealand', 3, 1, NOW(), NOW()),  -- CHC -> AKL
+(1, 'NZ101', 'ACME AIR', 1, 4, NOW(), NOW()),  -- AKL -> SYD
+(2, 'NZ102', 'ACME AIR', 4, 1, NOW(), NOW()),  -- SYD -> AKL
+(3, 'NZ405', 'ACME AIR', 1, 2, NOW(), NOW()),  -- AKL -> WLG
+(4, 'NZ406', 'ACME AIR', 2, 1, NOW(), NOW()),  -- WLG -> AKL
+(5, 'NZ549', 'ACME AIR', 1, 3, NOW(), NOW()),  -- AKL -> CHC
+(6, 'NZ550', 'ACME AIR', 3, 1, NOW(), NOW()),  -- CHC -> AKL
 (7, 'JQ201', 'Jetstar', 1, 5, NOW(), NOW()),         -- AKL -> MEL
 (8, 'JQ202', 'Jetstar', 5, 1, NOW(), NOW());         -- MEL -> AKL
 
