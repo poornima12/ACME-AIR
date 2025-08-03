@@ -1,0 +1,8 @@
+logging:
+  level:
+    org.hibernate.tool.schema: WARN
+    org.springframework.orm.jpa: WARN
+    org.hibernate.engine.jdbc: WARN
+    com.zaxxer.hikari: WARN
+    org.postgresql: WARN
+    org.testcontainers: WARN

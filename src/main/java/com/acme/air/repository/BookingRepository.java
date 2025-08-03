@@ -19,4 +19,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT COUNT(bi) FROM BookingItem bi WHERE bi.booking.schedule.id = :scheduleId AND bi.booking.status = :status")
     long countConfirmedBookingsBySchedule(@Param("scheduleId") Long scheduleId, @Param("status") Booking.BookingStatus status);
+
+    Optional<Booking> findByBookingReference(String bookingReference);
+
 }

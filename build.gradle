@@ -29,6 +29,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'com.h2database:h2'  // Add this for in-memory test database
+	testImplementation 'org.testcontainers:junit-jupiter'  // Optional: if you want to use Testcontainers
+	testImplementation 'org.testcontainers:postgresql'     // Optional: for PostgreSQL containers
 }
 
 // Force compatible Spring Framework versions
@@ -65,6 +68,13 @@ sourceSets {
 			srcDirs += "$buildDir/generated/src/main/java"
 		}
 	}
+}
+
+test {
+	maxParallelForks = 1
+	forkEvery = 1
+	jvmArgs = ['-Xmx2g', '-Dtestcontainers.reuse.enable=false']
+	systemProperty 'spring.test.context.cache.maxSize', '1'
 }
 
 tasks.named('test') {

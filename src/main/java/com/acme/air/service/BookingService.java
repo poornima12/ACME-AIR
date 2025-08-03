@@ -9,11 +9,14 @@ import com.acme.air.model.*;
 import com.acme.air.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +52,10 @@ public class BookingService {
         log.info("Creating booking for flight schedule {} with {} passengers",
                 request.flightScheduleId(), request.passengers().size());
 
+        // Debug: Check transaction status at start
+        log.debug("Transaction active at start: {}",
+                TransactionSynchronizationManager.isActualTransactionActive());
+
         try {
             // All validation and business logic here...
             validateBookingRequest(request);
@@ -57,6 +64,10 @@ public class BookingService {
             List<Seat> seats = validateAndLockSeats(request, schedule, sessionId);
             validateNoDuplicateBookings(passengers, schedule);
             validateFlightCapacity(schedule, seats.size());
+
+            // Debug: Check transaction status before calling createBookingForPassengers
+            log.debug("Transaction active before creating booking: {}",
+                    TransactionSynchronizationManager.isActualTransactionActive());
 
             // Create booking (participates in main transaction)
             Booking booking = createBookingForPassengers(passengers, seats, schedule, request);
@@ -134,12 +145,22 @@ public class BookingService {
     }
 
     private Passenger findOrCreatePassenger(BookingRequest.PassengerDTO dto) {
-        // Check if email is already used by different passenger
+        // Try to find existing passenger by email
         Optional<Passenger> existingByEmail = passengerRepository.findByEmail(dto.email());
         if (existingByEmail.isPresent()) {
-            throw new IllegalArgumentException(
-                    "Email " + dto.email() + " is already associated with a different passenger");
+            Passenger existing = existingByEmail.get();
+
+            // Validate that the passenger details match (security check)
+            if (!existing.getFirstName().equalsIgnoreCase(dto.firstName()) ||
+                    !existing.getLastName().equalsIgnoreCase(dto.lastName()) ||
+                    !existing.getPassportNumber().equals(dto.passportNumber())) {
+                throw new IllegalArgumentException(
+                        "Passenger details don't match existing record for email: " + dto.email());
+            }
+            // Return existing passenger (allows multiple bookings)
+            return existing;
         }
+        // Create new passenger if not found
         return createNewPassenger(dto);
     }
 
@@ -222,19 +243,29 @@ public class BookingService {
         }
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     private Booking createBookingForPassengers(List<Passenger> passengers, List<Seat> seats,
                                                FlightSchedule schedule, BookingRequest request) {
+        // Debug transaction status
+        boolean isTransactionActive = TransactionSynchronizationManager.isActualTransactionActive();
+        log.debug("Transaction active: {}", isTransactionActive);
+
+        if (!isTransactionActive) {
+            throw new IllegalStateException("No active transaction found");
+        }
         if (passengers.size() != seats.size()) {
             throw new IllegalStateException("Passenger count must match seat count");
         }
         try {
+            schedule = flightScheduleRepository.findById(schedule.getId())
+                    .orElseThrow(() -> new RuntimeException("Schedule not found"));
+
             Booking booking = new Booking();
             booking.setBookingReference(bookingIdGenerator.generateBookingReference());
             booking.setSchedule(schedule);
             booking.setBookingTime(ZonedDateTime.now());
             booking.setStatus(Booking.BookingStatus.CONFIRMED);
-            booking = bookingRepository.save(booking);
+            booking = bookingRepository.saveAndFlush(booking);
             log.debug("Created main booking {} for {} passengers",
                     booking.getBookingReference(), passengers.size());
             List<BookingItem> bookingItems = new ArrayList<>();
@@ -243,6 +274,7 @@ public class BookingService {
                 bookingItems.add(item);
             }
             booking.setBookingItems(bookingItems);
+            bookingRepository.save(booking);
             log.info("Successfully created booking {} with {} passengers",
                     booking.getBookingReference(), bookingItems.size());
             return booking;
@@ -256,15 +288,23 @@ public class BookingService {
         }
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     private BookingItem createBookingItem(Booking booking, Passenger passenger, Seat seat,
                                           BookingRequest.PassengerDTO passengerDTO) {
         try {
+            // Ensure entities are managed
+            booking = bookingRepository.findById(booking.getId())
+                    .orElseThrow(() -> new RuntimeException("Booking not found"));
+            passenger = passengerRepository.findById(passenger.getId())
+                    .orElseThrow(() -> new RuntimeException("Passenger not found"));
+            seat = seatRepository.findById(seat.getId())
+                    .orElseThrow(() -> new RuntimeException("Seat not found"));
+
             BookingItem item = new BookingItem();
             item.setBooking(booking);
             item.setPassenger(passenger);
             item.setSeat(seat);
-            BookingItem savedItem = bookingItemRepository.save(item);
+            BookingItem savedItem = bookingItemRepository.saveAndFlush(item);
             log.debug("Created booking item for passenger {} on seat {}",
                     passenger.getPassportNumber(), seat.getSeatNumber());
             return savedItem;
@@ -277,7 +317,7 @@ public class BookingService {
         }
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     private Payment createPaymentRecord(Booking booking, BookingRequest.PaymentInfoDTO paymentDTO) {
         Payment payment = new Payment();
         payment.setBooking(booking);
@@ -289,7 +329,7 @@ public class BookingService {
         return paymentRepository.save(payment);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     private void confirmSeatsAndReleaseLocks(List<Seat> seats, String sessionId) {
         for (Seat seat : seats) {
             seat.setStatus(Seat.SeatStatus.BOOKED);

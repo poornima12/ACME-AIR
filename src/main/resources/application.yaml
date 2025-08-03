@@ -15,7 +15,7 @@ springdoc:
     packages-to-scan: com.acme.air.controller
 logging:
   level:
-    root: INFO
+    root: DEBUG
     com.acme.air: DEBUG
 spring:
   datasource:
