@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-
 public record BookingRequest(
 
         @NotNull(message = "Flight schedule ID is required")

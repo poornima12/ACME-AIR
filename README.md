@@ -15,6 +15,7 @@ This repository contains a Spring Boot application implementing the backend for 
 - [x] Input validation and structured error responses
 - [x] JPA-based persistence layer
 - [x] Clean package structure and separation of concerns
+- [x] Atomic seat booking: Lock selected seats, verify all available, then either book all together or fail with conflict if any unavailable.
 
 ---
 
@@ -116,6 +117,8 @@ src
 - OpenAPI YAML file: src/main/resources/api/airline-reservation-api.yaml
 
 ### 📌 Future Enhancements
+-  Add Rate Limiting or Retry Handling in controller (using Resilience4j)
+
 - CD pipeline via GitHub Actions
 
 - Caching frequent search queries

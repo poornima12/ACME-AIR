@@ -1,9 +1,18 @@
-spring doc:
+springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    url: /openapi/acme-air.yaml
+    # url: /openapi/acme-air.yaml  # Remove this line
     path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    info:
+      title: Flight Booking API
+      version: 1.0.0
+      description: Contract-first API for searching and booking flights
+    packages-to-scan: com.acme.air.controller
 logging:
   level:
     root: INFO

@@ -1,7 +1,8 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.4'
+	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.openapi.generator' version '7.0.1'
 }
 
 group = 'com.acme.air'
@@ -19,14 +20,51 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'  // Updated version
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.postgresql:postgresql:42.7.3'
+	implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Force compatible Spring Framework versions
+configurations.all {
+	resolutionStrategy {
+		force 'org.springframework:spring-web:6.1.14'
+		force 'org.springframework:spring-context:6.1.14'
+		force 'org.springframework:spring-webmvc:6.1.14'
+		force 'org.springframework:spring-core:6.1.14'
+	}
+}
+
+openApiGenerate {
+	generatorName = "spring"
+	inputSpec = "$rootDir/src/main/resources/acme-air.yaml"
+	outputDir = "$buildDir/generated"
+	apiPackage = "com.acme.air.api"
+	modelPackage = "com.acme.air.generated.dto"
+	configOptions = [
+			skipDefaultInterface: "true",
+			interfaceOnly: "true",
+			useTags: "true",
+			useSpringBoot3: "true",
+			documentationProvider: "springdoc",
+			skipOperationExample: "true"
+	]
+}
+
+compileJava.dependsOn('openApiGenerate')
+
+sourceSets {
+	main {
+		java {
+			srcDirs += "$buildDir/generated/src/main/java"
+		}
+	}
 }
 
 tasks.named('test') {

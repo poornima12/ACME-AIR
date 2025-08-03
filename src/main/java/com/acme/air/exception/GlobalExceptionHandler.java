@@ -1,7 +1,7 @@
 package com.acme.air.exception;
 
-import com.acme.air.dto.ApiResponse;
 import com.acme.air.dto.ErrorResponse;
+
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,12 +29,18 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         }
         logger.error("Validation failed for request: {}", errors);
-        ErrorResponse error = new ErrorResponse("INVALID_REQUEST", errors.values().toString());
+
+        String errorMessage = errors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining(", "));
+
+        ErrorResponse error = new ErrorResponse("INVALID_REQUEST", errorMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        logger.error("HTTP message not readable", ex);
         Throwable cause = ex.getCause();
 
         if (cause instanceof InvalidFormatException invalidEx) {
@@ -55,30 +62,35 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        logger.error("Illegal argument", ex);
         ErrorResponse error = new ErrorResponse("INVALID_REQUEST", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        logger.error("Resource not found", ex);
         ErrorResponse error = new ErrorResponse("RESOURCE_NOT_FOUND", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(BookingConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(BookingConflictException ex) {
+        logger.error("Booking conflict", ex);
         ErrorResponse error = new ErrorResponse("BOOKING_CONFLICT", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(SeatUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleSeatUnavailable(SeatUnavailableException ex) {
+        logger.error("Seat unavailable", ex);
         ErrorResponse error = new ErrorResponse("SEAT_UNAVAILABLE", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        logger.error("Unexpected error occurred", ex); // Important: Log the actual exception
         ErrorResponse error = new ErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred. Please try again later.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

@@ -4,10 +4,19 @@ info:
   version: 1.0.0
   description: Contract-first API for searching and booking flights.
 
+tags:
+  - name: flights
+    description: Flight search operations
+  - name: bookings
+    description: Flight booking operations
+
 paths:
   /api/v1/flights/search:
     get:
+      tags:
+        - flights
       summary: Search for available flights
+      operationId: searchFlights
       parameters:
         - name: origin
           in: query
@@ -54,10 +63,12 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
-
   /api/v1/bookings:
     post:
+      tags:
+        - bookings
       summary: Create a new flight booking
+      operationId: createBooking
       requestBody:
         required: true
         content:

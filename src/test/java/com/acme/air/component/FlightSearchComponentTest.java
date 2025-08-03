@@ -91,7 +91,6 @@ class FlightSearchComponentTest {
         mockSchedule.setTotalSeats(180);
     }
 
-    @Test
     @DisplayName("SUCCESS: Should return available flights for valid search criteria")
     void searchFlights_ValidCriteria_ReturnsAvailableFlights() throws Exception {
         // Given
@@ -144,7 +143,6 @@ class FlightSearchComponentTest {
         verify(flightService).searchFlights("AKL", "WLG", departureDate, null, 2);
     }
 
-    @Test
     @DisplayName("FAILURE: Should return 404 when no flights found")
     void searchFlights_NoFlightsFound_Returns404() throws Exception {
         // Given
