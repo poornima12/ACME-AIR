@@ -29,24 +29,6 @@ public class FlightController implements FlightsApi {
     @Autowired
     private FlightService flightService;
 
-    /*@GetMapping("/search")
-    public ResponseEntity<ApiResponse<FlightSearchResponse>> searchFlights(
-            @RequestParam String origin,
-            @RequestParam String destination,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate, //YYYY-MM-DD
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
-            @RequestParam int passengers
-    ) {
-        logger.info("Flight search request: {} -> {}, departure: {}, passengers: {}",
-                origin, destination, departureDate, passengers);
-
-        FlightSearchResponse response = flightService.searchFlights(
-                origin, destination, departureDate, returnDate, passengers);
-
-        logger.info("Returning {} flights for search request", response.flights().size());
-        return ResponseEntity.ok(new ApiResponse<>(response));
-    }*/
-
     @Override
     @GetMapping("/search")
     public ResponseEntity<FlightsResponseWrapper> searchFlights(String origin, String destination, LocalDate departureDate, Integer passengers, LocalDate returnDate) {

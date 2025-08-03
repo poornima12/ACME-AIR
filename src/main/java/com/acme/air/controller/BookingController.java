@@ -39,17 +39,6 @@ public class BookingController implements BookingsApi {
 
     private final BookingService bookingService;
 
-/*    @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(@RequestBody @Valid BookingRequest bookingRequest,
-                                                                      HttpServletRequest request) {
-
-            String sessionId = getSessionId(request);
-            BookingResponse booking = bookingService.createBooking(bookingRequest, sessionId);
-            log.info("Successfully created booking {} for {} passengers",
-                    booking.bookingId(), booking.passengers().size());
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(booking));
-        }*/
-
     @Override
     @PostMapping
     public ResponseEntity<BookingResponseWrapper> createBooking(com.acme.air.generated.dto.BookingRequest bookingRequest) {
